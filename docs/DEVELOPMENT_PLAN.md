@@ -276,44 +276,51 @@ Base: `/api/v1/`
 ### Entity Relationship Diagram
 
 ```
-User
-├── Trip (owner)
-│   ├── TripStop (ordered, with dates)
-│   │   └── City (FK)
-│   ├── TripActivity (through TripStop)
-│   │   └── Activity (FK)
-│   ├── Expense (categorized costs)
-│   └── SharedTrip (public slug)
-├── SavedCity (bookmarks)
-└── CommunityPost (shared trips)
-
-City
-└── Activity (many activities per city)
+User (email-based auth)
+│
+├── Trips (owner)
+│    │
+│    ├── TripStops (ordered stops per trip)
+│    │      │
+│    │      └── City (destination master catalog)
+│    │             │
+│    │             └── Activities (activity master catalog)
+│    │
+│    ├── TripActivities (activities scheduled in a stop)
+│    │      │
+│    │      └── Activity (reused master activity)
+│    │
+│    ├── Expenses (categorized budget items: transport, accommodation, etc.)
+│    │
+│    └── SharedTrip (public share slug & link)
+│
+├── SavedCities (bookmarked destinations)
+│
+└── CommunityPosts (published trip showcase)
 ```
 
-### Core Entities
+### Table Definitions & Specifications
 
-| Entity | Key Fields |
-|---|---|
-| **User** | Django default + avatar_url, bio |
-| **Trip** | title, description, start_date, end_date, cover_image_url, is_public, slug, status, owner (FK→User) |
-| **City** | name, country, country_code, description, image_url, latitude, longitude |
-| **TripStop** | trip (FK→Trip), city (FK→City), arrival_date, departure_date, order, notes |
-| **Activity** | name, description, city (FK→City), category, estimated_cost, currency, duration_minutes, image_url, rating |
-| **TripActivity** | trip_stop (FK→TripStop), activity (FK→Activity), date, start_time, end_time, notes, order, custom_cost |
-| **Expense** | trip (FK→Trip), category, description, amount, currency, date |
-| **SharedTrip** | trip (FK→Trip), shared_by (FK→User), slug (unique), is_public |
-| **SavedCity** | user (FK→User), city (FK→City) |
-| **CommunityPost** | author (FK→User), trip (FK→Trip), caption, likes_count |
+| Table | Django App | Key Fields & Types | Indexes | Constraints |
+|---|---|---|---|---|
+| `users` | `users` | `id`, `email` (unique), `first_name`, `last_name`, `phone`, `city`, `country`, `profile_image`, `is_active`, `is_staff`, `created_at`, `updated_at` | `email` | `UNIQUE(email)` |
+| `trips` | `trips` | `id`, `user_id` (FK), `name`, `description`, `cover_image`, `start_date`, `end_date`, `total_budget` (Decimal), `is_public`, `share_slug` (unique), `created_at`, `updated_at` | `(user, -start_date)`, `(start_date, end_date)` | `CHECK(end_date >= start_date)`, `CHECK(total_budget >= 0)`, `UNIQUE(share_slug)` |
+| `cities` | `destinations` | `id`, `name`, `country`, `region`, `description`, `image`, `cost_index` (1-5), `popularity_score` (0.0-10.0), `created_at`, `updated_at` | `name`, `(-popularity_score)` | `UNIQUE(name, country)` |
+| `saved_cities` | `destinations` | `id`, `user_id` (FK), `city_id` (FK), `created_at` | — | `UNIQUE(user, city)` |
+| `trip_stops` | `itinerary` | `id`, `trip_id` (FK), `city_id` (FK), `start_date`, `end_date`, `stop_order`, `transport_cost` (Decimal), `accommodation_cost` (Decimal), `notes`, `created_at`, `updated_at` | `(trip, stop_order)`, `city` | `CHECK(end_date >= start_date)`, `CHECK(transport_cost >= 0)`, `CHECK(accommodation_cost >= 0)`, `UNIQUE(trip, stop_order)` |
+| `activities` | `activities` | `id`, `city_id` (FK), `name`, `description`, `category` (enum), `duration_minutes`, `estimated_cost` (Decimal), `image`, `created_at`, `updated_at` | `(city, category)`, `estimated_cost` | `CHECK(estimated_cost >= 0)` |
+| `trip_activities` | `itinerary` | `id`, `trip_stop_id` (FK), `activity_id` (FK), `activity_date`, `start_time`, `notes`, `estimated_cost` (Decimal), `activity_order`, `created_at`, `updated_at` | `(trip_stop, activity_date, activity_order)` | `CHECK(estimated_cost >= 0)`, `UNIQUE(trip_stop, activity, activity_date)` |
+| `expenses` | `budget` | `id`, `trip_id` (FK), `category` (enum), `amount` (Decimal), `description`, `expense_date`, `created_at`, `updated_at` | `(trip, category)`, `(trip, expense_date)` | `CHECK(amount >= 0)` |
+| `shared_trips` | `trips` | `id`, `trip_id` (FK 1:1), `slug` (unique), `created_at`, `updated_at` | `slug` | `UNIQUE(slug)` |
+| `community_posts` | `community` | `id`, `user_id` (FK), `trip_id` (FK), `title`, `description`, `created_at`, `updated_at` | `(-created_at)` | — |
 
-### Key Constraints
+### Structural Rationale & Design Choices
 
-- TripStop.order — unique per trip, determines stop sequence
-- TripActivity.order — unique per stop+date, determines activity sequence
-- SharedTrip.slug — globally unique for public URLs
-- Expense.amount — positive decimal
-- TripStop dates must fall within Trip date range
-- TripActivity.date must fall within TripStop date range
+1. **Why `TripStop` exists separately from `Trip`**: A trip can span multiple cities (e.g. London → Paris → Rome). `TripStop` encapsulates city-specific dates, order, transport costs, and accommodation costs for each leg of a multi-city journey.
+2. **Why `TripActivity` exists separately from `Activity`**: `Activity` acts as a master catalog per city (e.g., "Eiffel Tower Tour"). `TripActivity` represents scheduling that activity into a specific trip stop on a specific date with custom notes and times, enabling high reusability without data duplication.
+3. **Why `Expense` exists separately**: Allows flexible line-item expense tracking for budget breakdown (transport, accommodation, meals, activities, shopping) independent of planned itinerary items.
+4. **Why `SavedCity` exists separately**: Maintains a clean 1-to-many bookmark relationship between users and destination cities, enforced with composite uniqueness `UNIQUE(user, city)`.
+5. **Money representation**: All financial fields (`total_budget`, `transport_cost`, `accommodation_cost`, `estimated_cost`, `amount`) strictly use PostgreSQL `NUMERIC` (`DecimalField` with `max_digits=12, decimal_places=2`) to guarantee accuracy and avoid floating-point inaccuracies.
 
 ---
 

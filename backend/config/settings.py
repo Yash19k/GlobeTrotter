@@ -2,11 +2,12 @@
 GlobeTrotter — Django Settings
 
 Configured for:
-- PostgreSQL (Neon for production)
+- PostgreSQL (both development and production)
 - Django REST Framework + SimpleJWT
 - CORS for React frontend
 - drf-spectacular for API docs
 - WhiteNoise for static files
+- Custom User model (email-based auth)
 """
 
 from pathlib import Path
@@ -78,19 +79,20 @@ TEMPLATES = [
     },
 ]
 
-# ── Database ─────────────────────────────────────────────────
-# Development: SQLite for zero-setup local dev
-# Production: PostgreSQL via Neon (configured via DATABASE_URL)
+# ── Database (PostgreSQL — REQUIRED for both dev and production) ──
 DATABASES = {
     "default": {
-        "ENGINE": config("DB_ENGINE", default="django.db.backends.sqlite3"),
-        "NAME": config("DB_NAME", default=str(BASE_DIR / "db.sqlite3")),
-        "USER": config("DB_USER", default=""),
-        "PASSWORD": config("DB_PASSWORD", default=""),
-        "HOST": config("DB_HOST", default=""),
-        "PORT": config("DB_PORT", default=""),
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": config("DATABASE_NAME", default="globetrotter"),
+        "USER": config("DATABASE_USER", default="postgres"),
+        "PASSWORD": config("DATABASE_PASSWORD", default=""),
+        "HOST": config("DATABASE_HOST", default="localhost"),
+        "PORT": config("DATABASE_PORT", default="5432"),
     }
 }
+
+# ── Custom User Model ────────────────────────────────────────
+AUTH_USER_MODEL = "users.User"
 
 # ── Auth ─────────────────────────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [

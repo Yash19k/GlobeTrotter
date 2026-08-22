@@ -319,3 +319,73 @@ export interface ApiError {
   detail?: string;
   [field: string]: unknown;
 }
+
+// ── Admin / Analytics ───────────────────────────────────────
+
+export interface AnalyticsOverview {
+  total_users: number;
+  active_users: number;
+  total_trips: number;
+  public_trips: number;
+  total_budget_planned: number;
+  avg_trip_budget: number;
+  total_destinations: number;
+  total_activities: number;
+}
+
+export interface AnalyticsCity {
+  id: number;
+  name: string;
+  country: string;
+  region: string;
+  popularity_score: number;
+  cost_index: number;
+  visits_count: number;
+  image?: string;
+}
+
+export interface AnalyticsActivity {
+  id: number;
+  name: string;
+  category: string;
+  city_name: string;
+  estimated_cost: number;
+  duration_minutes: number;
+  scheduled_count: number;
+}
+
+export interface AnalyticsCategoryItem {
+  category: string;
+  count: number;
+}
+
+export interface AnalyticsTrendItem {
+  period: string;
+  users: number;
+  trips: number;
+  budget: number;
+}
+
+export interface AnalyticsUserItem {
+  id: number;
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone?: string;
+  city?: string;
+  country?: string;
+  is_active: boolean;
+  is_staff: boolean;
+  trips_count: number;
+  created_at: string;
+}
+
+export interface AnalyticsSummaryResponse {
+  overview: AnalyticsOverview;
+  popular_cities: AnalyticsCity[];
+  popular_activities: AnalyticsActivity[];
+  category_distribution: AnalyticsCategoryItem[];
+  trends: AnalyticsTrendItem[];
+  users: AnalyticsUserItem[];
+}
+

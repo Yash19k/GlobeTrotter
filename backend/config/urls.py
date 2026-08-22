@@ -12,6 +12,7 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
     SpectacularRedocView,
 )
+from apps.users.analytics_views import AnalyticsSummaryView
 
 def health_check(request):
     return JsonResponse({"status": "healthy"})
@@ -31,6 +32,7 @@ urlpatterns = [
     path("api/v1/", include("apps.itinerary.urls")),
     path("api/v1/", include("apps.budget.urls")),
     path("api/v1/", include("apps.community.urls")),
+    path("api/v1/analytics/summary/", AnalyticsSummaryView.as_view(), name="analytics-summary"),
 
     # API schema & docs
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),

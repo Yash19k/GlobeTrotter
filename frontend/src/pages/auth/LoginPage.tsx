@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Compass, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -58,11 +58,15 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary-100 text-primary-600 mb-4 shadow-sm">
-          <Compass className="w-8 h-8" />
-        </div>
+        <Link to="/login" className="inline-block mb-4">
+          <img
+            src="/logo.png"
+            alt="GlobeTrotter"
+            className="h-10 sm:h-12 w-auto mx-auto object-contain"
+          />
+        </Link>
         <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900">
-          Welcome back to GlobeTrotter
+          Welcome back
         </h2>
         <p className="mt-2 text-sm text-neutral-600">
           Sign in to access your travel itineraries and trip plans

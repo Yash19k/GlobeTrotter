@@ -20,6 +20,7 @@ import { PublicTripPage } from '@/pages/public/PublicTripPage';
 import { CommunityPage } from '@/pages/community/CommunityPage';
 import { ProfilePage } from '@/pages/profile/ProfilePage';
 import { SettingsPage } from '@/pages/settings/SettingsPage';
+import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage';
 
 export function App() {
   const initialize = useAuthStore((state) => state.initialize);
@@ -75,6 +76,22 @@ export function App() {
           element={
             <ProtectedRoute>
               <SettingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute>
+              <AdminDashboardPage />
             </ProtectedRoute>
           }
         />

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { User as UserIcon, Mail, Phone, MapPin, Globe, Image as ImageIcon, Save, CheckCircle, ShieldCheck } from 'lucide-react';
+import { User as UserIcon, Mail, Phone, MapPin, Globe, Image as ImageIcon, Save, CheckCircle, ShieldCheck, Calendar, ArrowRight } from 'lucide-react';
 
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Input } from '@/components/ui/Input';
@@ -10,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
+import { useTrips } from '@/hooks/useTrips';
 import { formatDate } from '@/lib/utils';
 
 const profileSchema = z.object({
@@ -25,8 +27,12 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 
 export const ProfilePage: React.FC = () => {
   const { data: user, isLoading, isError } = useProfile();
+  const { data: trips } = useTrips();
   const updateMutation = useUpdateProfile();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const preplannedTrips = (trips || []).filter((t) => t.status === 'UPCOMING' || t.status === 'ONGOING');
+  const previousTrips = (trips || []).filter((t) => t.status === 'COMPLETED');
 
   const {
     register,
@@ -223,6 +229,97 @@ export const ProfilePage: React.FC = () => {
             </Button>
           </div>
         </form>
+
+        {/* Preplanned Trips Section (Upcoming / Ongoing) */}
+        <div className="space-y-4 pt-4 border-t border-neutral-200/80">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-neutral-900 flex items-center space-x-2">
+              <Calendar className="w-4 h-4 text-primary-600" />
+              <span>Preplanned Trips ({preplannedTrips.length})</span>
+            </h2>
+            <Link to="/trips/new" className="text-xs font-semibold text-primary-600 hover:underline">
+              + Plan another trip
+            </Link>
+          </div>
+
+          {preplannedTrips.length === 0 ? (
+            <div className="bg-surface rounded-2xl border border-dashed border-neutral-200 p-8 text-center">
+              <p className="text-xs text-neutral-500">No upcoming trips planned yet.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {preplannedTrips.map((trip) => (
+                <div key={trip.id} className="bg-surface rounded-2xl border border-neutral-200 p-4 shadow-xs flex flex-col justify-between space-y-3">
+                  <div className="space-y-2">
+                    <div className="h-28 rounded-xl overflow-hidden bg-neutral-100 relative">
+                      <img
+                        src={trip.cover_image || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=400&q=80'}
+                        alt={trip.name}
+                        className="w-full h-full object-cover"
+                      />
+                      <span className="absolute top-2 right-2 bg-primary-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        {trip.status}
+                      </span>
+                    </div>
+                    <h3 className="text-sm font-bold text-neutral-900 truncate">{trip.name}</h3>
+                    <p className="text-xs text-neutral-500">
+                      {formatDate(trip.start_date)} – {formatDate(trip.end_date)}
+                    </p>
+                  </div>
+                  <Link to={`/trips/${trip.id}`}>
+                    <Button size="sm" variant="outline" className="w-full" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
+                      View Trip
+                    </Button>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Previous Trips Section (Completed) */}
+        <div className="space-y-4 pt-4 border-t border-neutral-200/80">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-neutral-900 flex items-center space-x-2">
+              <MapPin className="w-4 h-4 text-neutral-500" />
+              <span>Previous Trips ({previousTrips.length})</span>
+            </h2>
+          </div>
+
+          {previousTrips.length === 0 ? (
+            <div className="bg-surface rounded-2xl border border-dashed border-neutral-200 p-8 text-center">
+              <p className="text-xs text-neutral-500">No completed travel history recorded yet.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {previousTrips.map((trip) => (
+                <div key={trip.id} className="bg-surface rounded-2xl border border-neutral-200 p-4 shadow-xs flex flex-col justify-between space-y-3 opacity-90 hover:opacity-100 transition-opacity">
+                  <div className="space-y-2">
+                    <div className="h-28 rounded-xl overflow-hidden bg-neutral-100 relative">
+                      <img
+                        src={trip.cover_image || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=400&q=80'}
+                        alt={trip.name}
+                        className="w-full h-full object-cover grayscale-25"
+                      />
+                      <span className="absolute top-2 right-2 bg-neutral-800 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        COMPLETED
+                      </span>
+                    </div>
+                    <h3 className="text-sm font-bold text-neutral-900 truncate">{trip.name}</h3>
+                    <p className="text-xs text-neutral-500">
+                      {formatDate(trip.start_date)} – {formatDate(trip.end_date)}
+                    </p>
+                  </div>
+                  <Link to={`/trips/${trip.id}`}>
+                    <Button size="sm" variant="outline" className="w-full" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
+                      View Memories
+                    </Button>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </AppLayout>
   );

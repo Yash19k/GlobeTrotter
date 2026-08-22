@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
-  Compass,
   LayoutDashboard,
   Map,
   Compass as DiscoverIcon,
@@ -13,6 +12,7 @@ import {
   Menu,
   X,
   ChevronDown,
+  TrendingUp,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/Button';
@@ -30,6 +30,7 @@ export const Navbar: React.FC = () => {
     { label: 'My Trips', path: '/trips', icon: Map },
     { label: 'Discover', path: '/discover', icon: DiscoverIcon },
     { label: 'Community', path: '/community', icon: Users },
+    { label: 'Analytics', path: '/admin', icon: TrendingUp },
   ];
 
   const isActive = (path: string) => {
@@ -69,13 +70,12 @@ export const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo Brand */}
-          <Link to="/dashboard" className="flex items-center space-x-2.5 group">
-            <div className="w-9 h-9 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center group-hover:bg-primary-600 group-hover:text-white transition-colors duration-200 shadow-xs">
-              <Compass className="w-5 h-5" />
-            </div>
-            <span className="text-xl font-bold text-neutral-900 tracking-tight">
-              GlobeTrotter
-            </span>
+          <Link to={user ? "/dashboard" : "/login"} className="flex items-center group shrink-0">
+            <img
+              src="/logo.png"
+              alt="GlobeTrotter"
+              className="h-8 sm:h-9 w-auto max-w-[160px] sm:max-w-[200px] object-contain transition-transform duration-200 group-hover:scale-[1.02]"
+            />
           </Link>
 
           {/* Desktop Navigation Links */}
@@ -157,6 +157,15 @@ export const Navbar: React.FC = () => {
                   >
                     <Settings className="w-4 h-4 mr-2 text-neutral-400" />
                     Settings & Preferences
+                  </Link>
+
+                  <Link
+                    to="/admin"
+                    onClick={() => setIsDropdownOpen(false)}
+                    className="flex items-center px-4 py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 transition-colors"
+                  >
+                    <TrendingUp className="w-4 h-4 mr-2 text-neutral-400" />
+                    Admin & Analytics
                   </Link>
 
                   <div className="border-t border-neutral-100 pt-1">

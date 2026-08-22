@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Compass, Calendar, MapPin, DollarSign, ArrowRight, Sparkles, TrendingUp } from 'lucide-react';
+import { Plus, Compass, Calendar, MapPin, DollarSign, ArrowRight, Sparkles, TrendingUp, Search, Globe } from 'lucide-react';
 
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/Button';
@@ -9,6 +9,7 @@ import { TripCardSkeleton } from '@/components/ui/Skeleton';
 import { Alert } from '@/components/ui/Alert';
 import { useAuthStore } from '@/stores/authStore';
 import { useTrips, useDeleteTrip } from '@/hooks/useTrips';
+import { useCities } from '@/hooks/useCities';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import type { Trip } from '@/types';
@@ -16,9 +17,11 @@ import type { Trip } from '@/types';
 export const DashboardPage: React.FC = () => {
   const { user } = useAuthStore();
   const { data: trips, isLoading, isError, error } = useTrips();
+  const { data: citiesData } = useCities({ page_size: 4, ordering: '-popularity_score' });
   const deleteTripMutation = useDeleteTrip();
 
-  const [tripToDelete, setTripToDelete] = React.useState<Trip | null>(null);
+  const [tripToDelete, setTripToDelete] = useState<Trip | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Time-based greeting helper
   const getGreeting = () => {
@@ -29,6 +32,7 @@ export const DashboardPage: React.FC = () => {
   };
 
   const upcomingTrips = (trips || []).filter((t) => t.status === 'UPCOMING' || t.status === 'ONGOING');
+  const completedTrips = (trips || []).filter((t) => t.status === 'COMPLETED');
   const nextTrip = upcomingTrips.length > 0 ? upcomingTrips[0] : null;
   const totalBudget = (trips || []).reduce((acc, t) => acc + Number(t.total_budget || 0), 0);
 
@@ -56,7 +60,29 @@ export const DashboardPage: React.FC = () => {
 
           <div className="flex items-center space-x-3">
             <Link to="/trips/new">
-              <Button leftIcon={<Plus className="w-4 h-4" />}>Plan New Trip</Button>
+              <Button leftIcon={<Plus className="w-4 h-4" />}>Plan a Trip</Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Search & Filter Bar matching Screen 3 wireframe */}
+        <div className="bg-surface rounded-2xl border border-neutral-200 p-4 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+            <input
+              type="text"
+              placeholder="Search itineraries, places, and activities..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 bg-neutral-50 border border-neutral-300 rounded-xl text-xs text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+            />
+          </div>
+
+          <div className="flex items-center space-x-2 text-xs">
+            <Link to="/discover">
+              <Button variant="outline" size="sm" leftIcon={<Globe className="w-3.5 h-3.5" />}>
+                Explore Cities
+              </Button>
             </Link>
           </div>
         </div>
@@ -105,10 +131,10 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Next Upcoming Trip Hero Banner */}
+        {/* Next Upcoming Trip Hero Banner matching Screen 3 Banner Image */}
         {nextTrip && (
-          <div className="bg-gradient-to-r from-neutral-900 to-neutral-800 rounded-2xl p-6 sm:p-8 text-white shadow-md relative overflow-hidden">
-            <div className="absolute right-0 top-0 bottom-0 w-1/3 opacity-20 hidden md:block">
+          <div className="bg-gradient-to-r from-neutral-900 to-neutral-800 rounded-3xl p-6 sm:p-8 text-white shadow-md relative overflow-hidden">
+            <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-25 hidden md:block">
               <img
                 src={nextTrip.cover_image || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80'}
                 alt=""
@@ -118,7 +144,7 @@ export const DashboardPage: React.FC = () => {
             <div className="relative z-10 max-w-2xl space-y-4">
               <div className="inline-flex items-center space-x-2 bg-primary-500/20 border border-primary-400/30 px-3 py-1 rounded-full text-xs font-semibold text-primary-300">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Next Upcoming Adventure</span>
+                <span>Featured Upcoming Adventure</span>
               </div>
               <h2 className="text-2xl sm:text-3xl font-extrabold">{nextTrip.name}</h2>
               {nextTrip.description && <p className="text-sm text-neutral-300 line-clamp-2">{nextTrip.description}</p>}
@@ -147,13 +173,48 @@ export const DashboardPage: React.FC = () => {
           </div>
         )}
 
-        {/* Trips Section */}
+        {/* Top Regional Selections matching Screen 3 Wireframe */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-neutral-900">Your Trips</h2>
+            <h2 className="text-xl font-bold text-neutral-900">Top Regional Selections</h2>
+            <Link to="/discover" className="text-xs font-semibold text-primary-600 hover:text-primary-700">
+              Browse all destinations →
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {(citiesData?.results || []).slice(0, 4).map((city) => (
+              <Link
+                key={city.id}
+                to="/discover"
+                className="group bg-surface rounded-2xl border border-neutral-200 overflow-hidden shadow-xs hover:shadow-md transition-all p-3 flex flex-col justify-between"
+              >
+                <div className="h-32 rounded-xl overflow-hidden relative bg-neutral-100 mb-2">
+                  <img
+                    src={city.image || 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=400&q=80'}
+                    alt={city.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <span className="absolute bottom-2 right-2 bg-neutral-900/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                    ★ {city.popularity_score}
+                  </span>
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-neutral-900 truncate">{city.name}</h4>
+                  <p className="text-xs text-neutral-500 truncate">{city.country} • {city.region}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Active & Upcoming Trips Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-neutral-900">Upcoming & Active Itineraries</h2>
             {(trips || []).length > 0 && (
               <Link to="/trips" className="text-xs font-semibold text-primary-600 hover:text-primary-700">
-                View all trips →
+                View all ({trips?.length}) →
               </Link>
             )}
           </div>
@@ -164,7 +225,7 @@ export const DashboardPage: React.FC = () => {
               <TripCardSkeleton />
               <TripCardSkeleton />
             </div>
-          ) : (trips || []).length === 0 ? (
+          ) : upcomingTrips.length === 0 ? (
             /* Empty State */
             <div className="bg-surface rounded-2xl border border-dashed border-neutral-300 p-12 text-center max-w-lg mx-auto">
               <div className="w-16 h-16 rounded-2xl bg-primary-50 text-primary-600 flex items-center justify-center mx-auto mb-4">
@@ -172,21 +233,37 @@ export const DashboardPage: React.FC = () => {
               </div>
               <h3 className="text-lg font-bold text-neutral-900">Your next adventure starts here</h3>
               <p className="text-sm text-neutral-600 mt-1.5 mb-6 leading-relaxed">
-                You haven't created any travel plans yet. Start by defining your destination dates and budget.
+                You have no active itineraries planned right now. Create a new multi-city journey to get started.
               </p>
               <Link to="/trips/new">
-                <Button leftIcon={<Plus className="w-4 h-4" />}>Plan Your First Trip</Button>
+                <Button leftIcon={<Plus className="w-4 h-4" />}>Plan a Trip</Button>
               </Link>
             </div>
           ) : (
             /* Trip Grid */
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {trips!.slice(0, 6).map((trip) => (
+              {upcomingTrips.slice(0, 6).map((trip) => (
                 <TripCard key={trip.id} trip={trip} onDelete={(t) => setTripToDelete(t)} />
               ))}
             </div>
           )}
         </div>
+
+        {/* Previous Trips Section matching Screen 3 Wireframe */}
+        {completedTrips.length > 0 && (
+          <div className="space-y-4 pt-4 border-t border-neutral-200/80">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-neutral-900">Previous Trips</h2>
+              <span className="text-xs text-neutral-500">{completedTrips.length} past journeys</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {completedTrips.slice(0, 3).map((trip) => (
+                <TripCard key={trip.id} trip={trip} onDelete={(t) => setTripToDelete(t)} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Delete Confirmation Modal */}

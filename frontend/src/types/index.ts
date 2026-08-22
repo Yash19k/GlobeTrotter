@@ -64,10 +64,15 @@ export interface TripStop {
   id: number;
   trip: number;
   city: City;
-  arrival_date: string;
-  departure_date: string;
-  order: number;
+  start_date: string;
+  end_date: string;
+  stop_order: number;
+  transport_cost: number | string;
+  accommodation_cost: number | string;
   notes?: string;
+  activities?: TripActivity[];
+  created_at?: string;
+  updated_at?: string;
 }
 
 // ── Activity ────────────────────────────────────────────────
@@ -103,12 +108,18 @@ export interface TripActivity {
   id: number;
   trip_stop: number;
   activity: Activity;
-  date: string;
+  activity_date: string;
   start_time?: string;
-  end_time?: string;
   notes?: string;
-  order: number;
-  custom_cost?: number;
+  estimated_cost: number | string;
+  activity_order: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface FullItinerary {
+  trip: Trip;
+  stops: TripStop[];
 }
 
 // ── Expense / Budget ────────────────────────────────────────

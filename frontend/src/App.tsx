@@ -13,6 +13,7 @@ import { CreateTripPage } from '@/pages/trips/CreateTripPage';
 import { TripDetailPage } from '@/pages/trips/TripDetailPage';
 import { EditTripPage } from '@/pages/trips/EditTripPage';
 import { DiscoverPage } from '@/pages/discovery/DiscoverPage';
+import { ItineraryBuilderPage } from '@/pages/itinerary/ItineraryBuilderPage';
 
 export function App() {
   const initialize = useAuthStore((state) => state.initialize);
@@ -80,6 +81,14 @@ export function App() {
           element={
             <ProtectedRoute>
               <EditTripPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/trips/:id/itinerary"
+          element={
+            <ProtectedRoute>
+              <ItineraryBuilderPage />
             </ProtectedRoute>
           }
         />

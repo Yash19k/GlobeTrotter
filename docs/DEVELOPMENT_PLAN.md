@@ -247,18 +247,64 @@ Base: `/api/v1/`
 | GET | `/` | List / search city activities | `search`, `city`, `category`, `min_cost`, `max_cost`, `min_duration`, `max_duration`, `ordering` (`name`, `estimated_cost`, `duration_minutes`), `page` |
 | GET | `/:id/` | Activity detail | — |
 
-### Itinerary — Stops (`/api/v1/itinerary/`)
+### Itinerary & Stops (`/api/v1/`)
 
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/stops/?trip=:id` | List stops for a trip |
-| POST | `/stops/` | Add stop to trip |
-| PATCH | `/stops/:id/` | Update stop |
-| DELETE | `/stops/:id/` | Remove stop |
-| GET | `/trip-activities/?stop=:id` | List activities for a stop |
-| POST | `/trip-activities/` | Add activity to stop |
-| PATCH | `/trip-activities/:id/` | Update trip activity |
-| DELETE | `/trip-activities/:id/` | Remove trip activity |
+| GET | `/trips/:id/itinerary/` | Retrieve complete itinerary (trip + ordered stops + scheduled activities) |
+| POST | `/trips/:id/stops/` | Add a city stop to trip |
+| PATCH | `/stops/:id/` | Update stop dates, costs, or notes |
+| DELETE | `/stops/:id/` | Delete stop (cascades activities & normalizes stop order) |
+| PATCH | `/stops/reorder/` | Reorder stops array for a trip |
+| POST | `/stops/:id/activities/` | Schedule catalog activity in city stop |
+| PATCH | `/trip-activities/:id/` | Update scheduled activity date, time, cost, or notes |
+| DELETE | `/trip-activities/:id/` | Delete scheduled activity |
+| PATCH | `/trip-activities/reorder/` | Reorder scheduled activities within a stop |
+
+### Itinerary Architecture & Validation Rules
+
+- **Strict Validation Rules**:
+  - `start_date >= trip.start_date` AND `end_date <= trip.end_date` AND `start_date <= end_date`.
+  - **Sequential Non-Overlapping Stops**: Rejects overlapping date ranges for distinct stops in a trip.
+  - **City Matching Enforcement**: `activity.city_id == stop.city_id`. Rejects adding an activity from an unrelated city.
+  - **Activity Date Range**: `stop.start_date <= activity_date <= stop.end_date`.
+  - **Cost Copying**: Master `activity.estimated_cost` copied to `TripActivity` on creation to freeze planned cost.
+- **N+1 Query Optimization**:
+  - `get_trip_itinerary()` uses `select_related('city')` and `prefetch_related(Prefetch('trip_activities', queryset=TripActivity.objects.select_related('activity').order_by('activity_date', 'start_time', 'activity_order')))` to reconstruct the full page in 1 SQL query.
+- **Reordering & Constraint Normalization**:
+  - Database check constraint `stop_order >= 0` handled during reorder via atomic temporary offsets (`10000 + idx`).
+
+### Itinerary Data-Flow Architecture
+
+```
+User Action (e.g. Add Stop / Schedule Activity / Reorder)
+   │
+   ▼
+React UI Component (AddStopModal / AddActivityModal / StopCard)
+   │
+   ▼
+itineraryService (Axios client with JWT bearer header)
+   │
+   ▼
+Django API View (TripStopCreateView / TripActivityCreateView)
+   │
+   ▼
+itinerary_service (Business Logic & Validation Layer)
+   │ ── Date bounds & overlap check
+   │ ── City ID match check
+   │ ── Order auto-increment & offset normalization
+   ▼
+PostgreSQL Database (trip_stops & trip_activities with constraints)
+   │
+   ▼
+JSON API Response (TripStopSerializer / TripActivitySerializer)
+   │
+   ▼
+TanStack Query Cache (invalidate ['itinerary', tripId])
+   │
+   ▼
+Updated Itinerary UI (Day-grouped visual render)
+```
 
 ### Budget (`/api/v1/budget/`)
 

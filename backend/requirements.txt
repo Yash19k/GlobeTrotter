@@ -1,0 +1,19 @@
+# GlobeTrotter — Backend Dependencies
+# Generated: 2026-08-22
+
+# Django
+Django==6.1
+djangorestframework==3.18.0
+djangorestframework_simplejwt==5.5.1
+django-cors-headers==4.9.0
+drf-spectacular==0.30.0
+
+# Database
+psycopg[binary]==3.3.4
+
+# Configuration
+python-decouple==3.8
+
+# Production server
+gunicorn==26.1.0
+whitenoise==6.12.0

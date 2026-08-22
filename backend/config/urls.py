@@ -1,0 +1,32 @@
+"""
+GlobeTrotter — Root URL Configuration
+
+API routes are versioned under /api/v1/.
+"""
+
+from django.contrib import admin
+from django.urls import path, include
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+    SpectacularRedocView,
+)
+
+urlpatterns = [
+    # Django admin
+    path("admin/", admin.site.urls),
+
+    # API v1
+    path("api/v1/auth/", include("apps.users.urls")),
+    path("api/v1/trips/", include("apps.trips.urls")),
+    path("api/v1/cities/", include("apps.destinations.urls")),
+    path("api/v1/activities/", include("apps.activities.urls")),
+    path("api/v1/itinerary/", include("apps.itinerary.urls")),
+    path("api/v1/budget/", include("apps.budget.urls")),
+    path("api/v1/community/", include("apps.community.urls")),
+
+    # API schema & docs
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("api/schema/swagger/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+    path("api/schema/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
+]

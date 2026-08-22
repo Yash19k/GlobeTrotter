@@ -636,17 +636,18 @@ class Command(BaseCommand):
         city_count = 0
         activity_count = 0
 
-        for city_info in CITIES_DATA:
-            activities_info = city_info.pop("activities", [])
+        for item in CITIES_DATA:
+            activities_info = item.get("activities", [])
+            city_defaults = {k: v for k, v in item.items() if k != "activities"}
 
             city, created = City.objects.get_or_create(
-                name=city_info["name"],
-                country=city_info["country"],
-                defaults=city_info,
+                name=city_defaults["name"],
+                country=city_defaults["country"],
+                defaults=city_defaults,
             )
 
             if not created:
-                for key, val in city_info.items():
+                for key, val in city_defaults.items():
                     setattr(city, key, val)
                 city.save()
                 self.stdout.write(f"Updated city: {city.name}, {city.country}")

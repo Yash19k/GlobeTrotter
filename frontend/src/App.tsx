@@ -14,6 +14,7 @@ import { TripDetailPage } from '@/pages/trips/TripDetailPage';
 import { EditTripPage } from '@/pages/trips/EditTripPage';
 import { DiscoverPage } from '@/pages/discovery/DiscoverPage';
 import { ItineraryBuilderPage } from '@/pages/itinerary/ItineraryBuilderPage';
+import { BudgetPage } from '@/pages/budget/BudgetPage';
 
 export function App() {
   const initialize = useAuthStore((state) => state.initialize);
@@ -89,6 +90,14 @@ export function App() {
           element={
             <ProtectedRoute>
               <ItineraryBuilderPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/trips/:id/budget"
+          element={
+            <ProtectedRoute>
+              <BudgetPage />
             </ProtectedRoute>
           }
         />

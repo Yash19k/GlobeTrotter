@@ -22,7 +22,7 @@ urlpatterns = [
     path("api/v1/cities/", include("apps.destinations.urls")),
     path("api/v1/activities/", include("apps.activities.urls")),
     path("api/v1/", include("apps.itinerary.urls")),
-    path("api/v1/budget/", include("apps.budget.urls")),
+    path("api/v1/", include("apps.budget.urls")),
     path("api/v1/community/", include("apps.community.urls")),
 
     # API schema & docs

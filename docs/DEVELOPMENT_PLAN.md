@@ -306,15 +306,59 @@ TanStack Query Cache (invalidate ['itinerary', tripId])
 Updated Itinerary UI (Day-grouped visual render)
 ```
 
-### Budget (`/api/v1/budget/`)
+### Budget Engine (`/api/v1/`)
 
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/expenses/?trip=:id` | List expenses for trip |
-| POST | `/expenses/` | Add expense |
-| PATCH | `/expenses/:id/` | Update expense |
-| DELETE | `/expenses/:id/` | Delete expense |
-| GET | `/summary/?trip=:id` | Budget summary / totals |
+| GET | `/trips/:id/budget/` | Retrieve complete trip financial calculations, category breakdown, city stop breakdown, daily breakdown, and budget status |
+| GET | `/trips/:id/expenses/` | List explicit expense records for trip |
+| POST | `/trips/:id/expenses/` | Create explicit expense record |
+| DELETE | `/expenses/:id/` | Delete explicit expense record |
+
+### Budget Engine Architecture & Cost Calculation Rules
+
+- **Cost Aggregation Pipeline**:
+  - `TripStop.transport_cost` → `TRANSPORT` category
+  - `TripStop.accommodation_cost` → `ACCOMMODATION` category
+  - `TripActivity.estimated_cost` → mapped by `Activity.category` (`FOOD` → `MEALS`, others → `ACTIVITIES`)
+  - `Expense` records → added as explicit additional expenses (`TRANSPORT`, `ACCOMMODATION`, `ACTIVITY`, `MEAL`, `OTHER`). Explicit expenses represent additional out-of-pocket costs beyond itinerary catalog items to prevent silent double-counting.
+- **Budget Status Evaluation**:
+  - `OVER_BUDGET`: `estimated_total > total_budget` (or `total_budget == 0` when `estimated_total > 0`)
+  - `NEAR_LIMIT`: `estimated_total >= total_budget * 0.80`
+  - `WITHIN_BUDGET`: Otherwise
+- **State Invalidation & Synchronization**:
+  - Itinerary mutations (`addStop`, `updateStop`, `deleteStop`, `addActivity`, `updateActivity`, `deleteActivity`) invalidate both `['itinerary', tripId]` and `['trip-budget', tripId]` TanStack Query caches, guaranteeing automatic UI recalculation.
+
+### Budget Engine Data-Flow Diagram
+
+```
+Trip (total_budget)
+   │
+   ├── TripStops (transport_cost + accommodation_cost)
+   │      │
+   │      └── TripActivities (estimated_cost mapped to ACTIVITIES / MEALS)
+   │
+   └── Expenses (explicit additional out-of-pocket costs)
+          │
+          ▼
+budget_service.calculate_trip_budget()
+   │ ── Sum categories (transport, accommodation, activities, meals, other)
+   │ ── Calculate estimated_total & remaining_budget (un-clamped)
+   │ ── Evaluate status (WITHIN_BUDGET / NEAR_LIMIT / OVER_BUDGET)
+   │ ── Calculate duration_days & average_daily_cost
+   │ ── Compute city stop breakdown & day-by-day distribution
+   ▼
+GET /api/v1/trips/{trip_id}/budget/
+   ▼
+useTripBudget (TanStack Query cache key ['trip-budget', tripId])
+   ▼
+BudgetPage Dashboard UI
+   │ ── 4 Summary Cards (Total Budget, Estimated Cost, Remaining, Avg/Day)
+   │ ── Status Alert Banner
+   │ ── Recharts Category Donut Chart & Table
+   │ ── Recharts Daily Bar Chart
+   └── City Stop Breakdown Cards
+```
 
 ### Community (`/api/v1/community/`)
 

@@ -124,14 +124,64 @@ export interface FullItinerary {
 
 // ── Expense / Budget ────────────────────────────────────────
 
+export type BudgetStatus = 'WITHIN_BUDGET' | 'NEAR_LIMIT' | 'OVER_BUDGET';
+
+export interface BudgetCategoryBreakdown {
+  transport: string;
+  accommodation: string;
+  activities: string;
+  meals: string;
+  other: string;
+}
+
+export interface BudgetStopBreakdown {
+  id: number;
+  city_id: number;
+  city_name: string;
+  country: string;
+  start_date: string;
+  end_date: string;
+  transport_cost: string;
+  accommodation_cost: string;
+  activities_cost: string;
+  total_cost: string;
+}
+
+export interface BudgetDayBreakdown {
+  date: string;
+  day_number: number;
+  label: string;
+  activities_cost: string;
+  expenses_cost: string;
+  fixed_daily_cost: string;
+  total_cost: string;
+}
+
+export interface TripBudget {
+  trip_id: number;
+  trip_name: string;
+  currency: string;
+  total_budget: string;
+  estimated_total: string;
+  remaining_budget: string;
+  budget_used_percentage: number;
+  status: BudgetStatus;
+  duration_days: number;
+  average_daily_cost: string;
+  categories: BudgetCategoryBreakdown;
+  stops: BudgetStopBreakdown[];
+  days: BudgetDayBreakdown[];
+}
+
 export interface Expense {
   id: number;
   trip: number;
-  category: ExpenseCategory;
-  description: string;
-  amount: number;
-  currency: string;
-  date: string;
+  category: string;
+  amount: number | string;
+  description?: string;
+  expense_date: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export type ExpenseCategory =

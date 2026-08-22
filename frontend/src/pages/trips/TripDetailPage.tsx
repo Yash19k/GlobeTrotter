@@ -186,18 +186,24 @@ export const TripDetailPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Budget Module Placeholder */}
-                <div className="bg-surface p-6 rounded-2xl border border-neutral-200 shadow-xs space-y-3 relative overflow-hidden">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                    <PieChart className="w-5 h-5" />
+                {/* Budget Module Card (ACTIVE) */}
+                <div className="bg-surface p-6 rounded-2xl border border-emerald-200 shadow-xs space-y-3 relative overflow-hidden flex flex-col justify-between">
+                  <div className="space-y-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                      <PieChart className="w-5 h-5" />
+                    </div>
+                    <h3 className="text-base font-bold text-neutral-900">Expense & Budget Engine</h3>
+                    <p className="text-xs text-neutral-600 leading-relaxed">
+                      View automatic financial calculations, category charts, city cost breakdowns, and budget status.
+                    </p>
                   </div>
-                  <h3 className="text-base font-bold text-neutral-900">Expense & Budget Engine</h3>
-                  <p className="text-xs text-neutral-600 leading-relaxed">
-                    Track categorized costs (transport, lodging, meals) against planned budget.
-                  </p>
-                  <span className="inline-flex items-center text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
-                    Coming in Phase 6
-                  </span>
+                  <div className="pt-2">
+                    <Link to={`/trips/${trip.id}/budget`}>
+                      <Button size="sm" variant="outline" className="w-full">
+                        View Budget Dashboard →
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
 
                 {/* Timeline Module Placeholder */}

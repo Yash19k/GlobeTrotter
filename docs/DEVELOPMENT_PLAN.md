@@ -360,6 +360,41 @@ BudgetPage Dashboard UI
    └── City Stop Breakdown Cards
 ```
 
+### Calendar & Timeline Experience (`/trips/:id/calendar`)
+
+- **Single Source of Truth**: Derives presentation directly from existing `GET /api/v1/trips/{trip_id}/itinerary/` and `GET /api/v1/trips/{trip_id}/budget/`. No duplicate database tables or secondary scheduling state.
+- **Derived Day Strategy**: Pure utility functions in [`calendarUtils.ts`](file:///d:/Codes/Hackthon/GlobeTrotter/frontend/src/utils/calendarUtils.ts) generate calendar days covering `Trip.start_date` through `Trip.end_date` (including empty "Free Days").
+- **Timezone Safety**: `parseLocalDate(dateStr)` parses ISO date-only strings using UTC methods to prevent local timezone offset shifting (e.g. `"2026-08-15"` remains Aug 15 across all browser timezones).
+- **Time Ordering & Unscheduled Placement**: Scheduled activities are sorted by `start_time` first (e.g. `"09:00"`, `"14:00"`), followed by `activity_order`. Activities without a `start_time` are displayed under a dedicated "Flexible / Unscheduled" section.
+
+### Calendar & Timeline Flow Diagram
+
+```
+Trip
+ │
+ ├── Trip Date Range (start_date → end_date)
+ │      │
+ │      ▼
+ │   Generated Calendar Days (inclusive of empty Free Days)
+ │      │
+ ├── TripStops (city, start_date, end_date)
+ │      │
+ │      ▼
+ │   City Transition Headers & Active Destination Mapping
+ │      │
+ └── TripActivities (activity_date, start_time, estimated_cost)
+        │
+        ▼
+     Grouped by Activity Date
+        │
+        ▼
+     Sorted by Start Time / Activity Order
+        │ ── Scheduled items (09:00 AM)
+        │ ── Unscheduled items (Flexible / Unscheduled)
+        ▼
+     Timeline View / 7-Column Calendar Grid UI
+```
+
 ### Community (`/api/v1/community/`)
 
 | Method | Endpoint | Description |

@@ -54,6 +54,11 @@ export const TripDetailPage: React.FC = () => {
                   Itinerary Builder
                 </Button>
               </Link>
+              <Link to={`/trips/${trip.id}/calendar`}>
+                <Button variant="outline" size="sm" leftIcon={<CalendarDays className="w-4 h-4" />}>
+                  Calendar
+                </Button>
+              </Link>
               <Link to={`/trips/${trip.id}/edit`}>
                 <Button variant="outline" size="sm" leftIcon={<Edit3 className="w-4 h-4" />}>
                   Edit Trip
@@ -206,18 +211,24 @@ export const TripDetailPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Timeline Module Placeholder */}
-                <div className="bg-surface p-6 rounded-2xl border border-neutral-200 shadow-xs space-y-3 relative overflow-hidden">
-                  <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-                    <CalendarDays className="w-5 h-5" />
+                {/* Calendar Module Card (ACTIVE) */}
+                <div className="bg-surface p-6 rounded-2xl border border-amber-200 shadow-xs space-y-3 relative overflow-hidden flex flex-col justify-between">
+                  <div className="space-y-3">
+                    <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center">
+                      <CalendarDays className="w-5 h-5" />
+                    </div>
+                    <h3 className="text-base font-bold text-neutral-900">Calendar & Timeline</h3>
+                    <p className="text-xs text-neutral-600 leading-relaxed">
+                      Visualize your journey on an interactive day-by-day chronological timeline and calendar grid.
+                    </p>
                   </div>
-                  <h3 className="text-base font-bold text-neutral-900">Calendar & Timeline</h3>
-                  <p className="text-xs text-neutral-600 leading-relaxed">
-                    Visualize multi-city trips on an interactive day-by-day calendar timeline.
-                  </p>
-                  <span className="inline-flex items-center text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full">
-                    Coming in Phase 6
-                  </span>
+                  <div className="pt-2">
+                    <Link to={`/trips/${trip.id}/calendar`}>
+                      <Button size="sm" variant="outline" className="w-full">
+                        View Travel Timeline →
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>

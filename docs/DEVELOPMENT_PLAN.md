@@ -395,20 +395,81 @@ Trip
      Timeline View / 7-Column Calendar Grid UI
 ```
 
-### Community (`/api/v1/community/`)
+### Public Sharing & Community Discovery (`/api/v1/`)
 
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/posts/` | List community posts |
-| POST | `/posts/` | Share trip to community |
+| POST | `/trips/:id/publish/` | Publish trip and generate unique share slug |
+| POST | `/trips/:id/unpublish/` | Unpublish trip to make it private again |
+| GET | `/public/trips/:slug/` | Get read-only public itinerary (no auth required) |
+| POST | `/public/trips/:slug/copy/` | Deep-copy public trip into user account as a new private trip |
+| GET | `/community/trips/` | List published public trips for community discovery (paginated) |
 
-### Public (`/api/v1/public/`)
+### Sharing & Copy-Trip Architecture
+
+- **Public Read-Only Security**:
+  - `PublicTripDetailResponseSerializer` explicitly serializes only safe public fields (`trip.name`, `description`, `dates`, `duration_days`, `creator.first_name`, `stops`, `budget_summary`).
+  - Strictly omits email, password, phone, private profile details, internal auth tokens, or raw private expenses.
+  - Private trips (`is_public = False`) return `404 Not Found` to unauthenticated or external requests.
+- **Atomic Deep-Copy Pipeline**:
+  - `sharing_service.copy_public_trip()` operates inside `transaction.atomic()`.
+  - Creates a new `Trip` owned by the requesting user, named `"Copy of {name}"`, initialized as `is_public = False`.
+  - Deep-copies all `TripStop` and `TripActivity` items. Reuses master `City` and `Activity` records to prevent catalog duplication.
+- **Community Discovery Feed**:
+  - `GET /api/v1/community/trips/` returns paginated public trip cards (`is_public = True`) ordered by creation date with search filtering by title, city, or country.
+
+### Public Sharing & Copy-Trip Flow Diagram
+
+```
+Original Trip Owner (User A)
+   │
+   ▼
+POST /api/v1/trips/{trip_id}/publish/
+   │ ── Generate unique share_slug (slugified-name-hex)
+   │ ── Set is_public = True
+   ▼
+Public Shared URL (/public/trips/{share_slug})
+   │
+   ├── Logged-Out Visitor
+   │      │
+   │      ▼
+   │   GET /api/v1/public/trips/{slug}/ (Read-Only Itinerary & Budget Summary)
+   │
+   └── Authenticated Visitor (User B)
+          │
+          ▼
+       POST /api/v1/public/trips/{slug}/copy/
+          │ ── transaction.atomic()
+          │ ── Create NEW Trip (owner = User B, is_public = False)
+          │ ── Deep-copy TripStops & TripActivities
+          │ ── Reuse master City & Activity catalog records
+          ▼
+       Redirect to User B's new private Trip (/trips/{new_id})
+### Profile, Settings & Design System Architecture (`/api/v1/auth/me/`)
 
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/trips/:slug/` | Get public trip by slug |
+| GET | `/auth/me/` | Retrieve current authenticated user profile |
+| PATCH | `/auth/me/` | Update editable profile fields (`first_name`, `last_name`, `phone`, `city`, `country`, `profile_image`) |
 
----
+### Design System & Accessibility Lock
+
+- **Color Palette (Light Theme Only)**:
+  - Background: Warm off-white (`#fafaf9`)
+  - Surface Cards: White (`#ffffff`) with subtle border (`#e7e5e4`)
+  - Primary Text: Dark charcoal (`#292524`)
+  - Secondary Text: Muted slate (`#78716c`)
+  - Accent Color: Teal (`#0d9488` / `primary-600`)
+- **Restrained Visual Aesthetics**:
+  - No purple/blue gradients, glowing containers, neon accents, or glassmorphism blobs.
+  - Clean Inter typography hierarchy with defined page titles, section headers, body text, and meta pills.
+- **Accessibility & Focus Rings**:
+  - All interactive elements use standard `<button>` or `<a href>` elements.
+  - Keyboard navigation supported (Tab, Enter, Escape). Visible focus rings (`focus-visible:ring-2 focus-visible:ring-primary-500`).
+  - Mobile responsive navigation drawer supporting viewport sizes from 375px+.
+- **Reusable Component System**:
+  - `EmptyState`: Standardized empty state card with icon, title, description, and CTA.
+  - `Input` / `Select` / `Textarea`: Standardized form controls with associated labels, error states, and helper text.
 
 ## 7. Database Entity Plan
 

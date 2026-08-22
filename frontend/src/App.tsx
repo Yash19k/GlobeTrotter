@@ -16,6 +16,10 @@ import { DiscoverPage } from '@/pages/discovery/DiscoverPage';
 import { ItineraryBuilderPage } from '@/pages/itinerary/ItineraryBuilderPage';
 import { BudgetPage } from '@/pages/budget/BudgetPage';
 import { CalendarTimelinePage } from '@/pages/calendar/CalendarTimelinePage';
+import { PublicTripPage } from '@/pages/public/PublicTripPage';
+import { CommunityPage } from '@/pages/community/CommunityPage';
+import { ProfilePage } from '@/pages/profile/ProfilePage';
+import { SettingsPage } from '@/pages/settings/SettingsPage';
 
 export function App() {
   const initialize = useAuthStore((state) => state.initialize);
@@ -45,12 +49,32 @@ export function App() {
           }
         />
 
+        {/* Public Read-Only Itinerary & Community Routes */}
+        <Route path="/public/trips/:slug" element={<PublicTripPage />} />
+        <Route path="/community" element={<CommunityPage />} />
+
         {/* Protected Application Routes */}
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
               <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <SettingsPage />
             </ProtectedRoute>
           }
         />

@@ -22,6 +22,12 @@ SECRET_KEY = config("DJANGO_SECRET_KEY", default="django-insecure-dev-key-change
 DEBUG = config("DJANGO_DEBUG", default=True, cast=bool)
 ALLOWED_HOSTS = config("DJANGO_ALLOWED_HOSTS", default="localhost,127.0.0.1,testserver", cast=Csv())
 
+# Security Headers
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = "DENY"
+SECURE_REFERRER_POLICY = "same-origin"
+
 # ── Installed Apps ───────────────────────────────────────────
 INSTALLED_APPS = [
     # Django

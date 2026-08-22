@@ -6,13 +6,20 @@ API routes are versioned under /api/v1/.
 
 from django.contrib import admin
 from django.urls import path, include
+from django.http import JsonResponse
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularSwaggerView,
     SpectacularRedocView,
 )
 
+def health_check(request):
+    return JsonResponse({"status": "healthy"})
+
 urlpatterns = [
+    # Health check
+    path("health/", health_check, name="health-check"),
+
     # Django admin
     path("admin/", admin.site.urls),
 
@@ -23,7 +30,7 @@ urlpatterns = [
     path("api/v1/activities/", include("apps.activities.urls")),
     path("api/v1/", include("apps.itinerary.urls")),
     path("api/v1/", include("apps.budget.urls")),
-    path("api/v1/community/", include("apps.community.urls")),
+    path("api/v1/", include("apps.community.urls")),
 
     # API schema & docs
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),

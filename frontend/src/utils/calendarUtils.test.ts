@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import {
   parseLocalDate,
   countDaysBetween,
@@ -102,39 +103,33 @@ const mockStops: TripStop[] = [
   },
 ];
 
-export function runCalendarUtilsTests() {
-  console.log('--- Running Calendar Utilities Tests ---');
+describe('Calendar Utilities Unit Tests', () => {
+  it('parseLocalDate preserves date-only values without timezone shift', () => {
+    const d = parseLocalDate('2026-08-15');
+    expect(d.getUTCDate()).toBe(15);
+    expect(d.getUTCMonth()).toBe(7);
+  });
 
-  // Test 1: Date parsing timezone safety
-  const d = parseLocalDate('2026-08-15');
-  console.assert(d.getUTCDate() === 15, 'Test 1 Failed: Date shift detected in UTC day');
-  console.assert(d.getUTCMonth() === 7, 'Test 1 Failed: Month index mismatch');
-  console.log('✓ Test 1 Passed: parseLocalDate preserves date-only values');
+  it('countDaysBetween calculates correct inclusive date count', () => {
+    const daysCount = countDaysBetween('2026-08-15', '2026-08-20');
+    expect(daysCount).toBe(6);
+  });
 
-  // Test 2: countDaysBetween
-  const daysCount = countDaysBetween('2026-08-15', '2026-08-20');
-  console.assert(daysCount === 6, `Test 2 Failed: expected 6 days, got ${daysCount}`);
-  console.log('✓ Test 2 Passed: countDaysBetween calculated inclusive range');
+  it('sortDayActivities orders scheduled items by time and isolates unscheduled items', () => {
+    const { scheduled, unscheduled } = sortDayActivities(mockTripActivities);
+    expect(scheduled.length).toBe(2);
+    expect(scheduled[0].activity.name).toBe('Eiffel Tower'); // 09:00 AM
+    expect(scheduled[1].activity.name).toBe('Louvre Museum'); // 14:00 PM
+    expect(unscheduled.length).toBe(1);
+    expect(unscheduled[0].activity.name).toBe('Seine Walk');
+  });
 
-  // Test 3: sortDayActivities
-  const { scheduled, unscheduled } = sortDayActivities(mockTripActivities);
-  console.assert(scheduled.length === 2, 'Test 3 Failed: expected 2 scheduled activities');
-  console.assert(scheduled[0].activity.name === 'Eiffel Tower', 'Test 3 Failed: 09:00 should come first');
-  console.assert(scheduled[1].activity.name === 'Louvre Museum', 'Test 3 Failed: 14:00 should come second');
-  console.assert(unscheduled.length === 1, 'Test 3 Failed: expected 1 unscheduled activity');
-  console.assert(unscheduled[0].activity.name === 'Seine Walk', 'Test 3 Failed: Seine Walk should be unscheduled');
-  console.log('✓ Test 3 Passed: sortDayActivities correctly ordered by start_time and isolated unscheduled items');
-
-  // Test 4: generateCalendarDays
-  const calendarDays = generateCalendarDays('2026-08-15', '2026-08-20', mockStops);
-  console.assert(calendarDays.length === 6, `Test 4 Failed: expected 6 calendar days, got ${calendarDays.length}`);
-  console.assert(calendarDays[0].stop?.city.name === 'Paris', 'Test 4 Failed: Day 1 city should be Paris');
-  console.assert(calendarDays[3].stop?.city.name === 'Rome', 'Test 4 Failed: Day 4 city should be Rome');
-  console.assert(calendarDays[3].isCityTransition === true, 'Test 4 Failed: Day 4 should mark city transition to Rome');
-  console.assert(calendarDays[2].isEmpty === true, 'Test 4 Failed: Aug 17 should be marked empty (Free Day)');
-  console.log('✓ Test 4 Passed: generateCalendarDays correctly mapped full range, city transitions, and empty free days');
-
-  console.log('All 4 Calendar Utilities tests passed successfully!');
-}
-
-runCalendarUtilsTests();
+  it('generateCalendarDays maps full range, city transitions, and empty free days', () => {
+    const calendarDays = generateCalendarDays('2026-08-15', '2026-08-20', mockStops);
+    expect(calendarDays.length).toBe(6);
+    expect(calendarDays[0].stop?.city.name).toBe('Paris');
+    expect(calendarDays[3].stop?.city.name).toBe('Rome');
+    expect(calendarDays[3].isCityTransition).toBe(true);
+    expect(calendarDays[2].isEmpty).toBe(true);
+  });
+});

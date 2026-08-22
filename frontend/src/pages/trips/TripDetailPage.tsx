@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, DollarSign, MapPin, Edit3, Trash2, Sparkles, Map, PieChart, CalendarDays } from 'lucide-react';
+import { ArrowLeft, Calendar, DollarSign, MapPin, Edit3, Trash2, Sparkles, Map, PieChart, CalendarDays, Share2, Check, Globe, Lock } from 'lucide-react';
 
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/Button';
@@ -9,6 +9,7 @@ import { Alert } from '@/components/ui/Alert';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useTrip, useDeleteTrip } from '@/hooks/useTrips';
+import { usePublishTrip, useUnpublishTrip } from '@/hooks/usePublicSharing';
 import { formatDate, formatCurrency, daysBetween } from '@/lib/utils';
 
 export const TripDetailPage: React.FC = () => {
@@ -17,8 +18,11 @@ export const TripDetailPage: React.FC = () => {
 
   const { data: trip, isLoading, isError, error } = useTrip(id);
   const deleteTripMutation = useDeleteTrip();
+  const publishMutation = usePublishTrip(id || 0);
+  const unpublishMutation = useUnpublishTrip(id || 0);
 
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   const handleDeleteConfirm = () => {
     if (id) {
@@ -159,6 +163,71 @@ export const TripDetailPage: React.FC = () => {
                     {trip.destination_count || 0} cities planned
                   </p>
                   <p className="text-xs text-neutral-500">Multi-city stops</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Publicity & Public Sharing Panel */}
+            <div className="bg-surface rounded-2xl border border-neutral-200 p-6 shadow-xs space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center space-x-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold shrink-0 ${
+                    trip.is_public ? 'bg-emerald-50 text-emerald-600' : 'bg-neutral-100 text-neutral-500'
+                  }`}>
+                    {trip.is_public ? <Globe className="w-5 h-5" /> : <Lock className="w-5 h-5" />}
+                  </div>
+                  <div>
+                    <div className="flex items-center space-x-2">
+                      <h3 className="text-sm font-bold text-neutral-900">Publicity & Sharing</h3>
+                      <span className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-full ${
+                        trip.is_public ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-neutral-100 text-neutral-600 border border-neutral-200'
+                      }`}>
+                        {trip.is_public ? 'PUBLIC' : 'PRIVATE'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-neutral-500 mt-0.5">
+                      {trip.is_public
+                        ? 'Anyone with the share link or in the community feed can view and copy this read-only itinerary.'
+                        : 'Only you can see this trip. Publish it to get a shareable public link.'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2 shrink-0">
+                  {trip.is_public ? (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          const url = `${window.location.origin}/public/trips/${trip.share_slug}`;
+                          navigator.clipboard.writeText(url);
+                          setCopiedLink(true);
+                          setTimeout(() => setCopiedLink(false), 2500);
+                        }}
+                        leftIcon={copiedLink ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4" />}
+                      >
+                        {copiedLink ? 'Link Copied!' : 'Copy Share Link'}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => unpublishMutation.mutate()}
+                        isLoading={unpublishMutation.isPending}
+                      >
+                        Unpublish
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      size="sm"
+                      onClick={() => publishMutation.mutate()}
+                      isLoading={publishMutation.isPending}
+                      leftIcon={<Globe className="w-4 h-4" />}
+                    >
+                      Publish Trip
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>

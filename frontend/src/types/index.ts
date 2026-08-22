@@ -194,6 +194,96 @@ export type ExpenseCategory =
   | 'visa'
   | 'other';
 
+// ── Public Sharing & Community ──────────────────────────────
+
+export interface PublicCreator {
+  first_name: string;
+}
+
+export interface PublicActivityDetail {
+  id: number;
+  name: string;
+  category: string;
+  duration_minutes: number;
+  estimated_cost: string;
+  image?: string;
+}
+
+export interface PublicTripActivity {
+  id: number;
+  activity: PublicActivityDetail;
+  activity_date: string;
+  start_time?: string;
+  estimated_cost: string;
+  notes?: string;
+}
+
+export interface PublicCityDetail {
+  id: number;
+  name: string;
+  country: string;
+  image?: string;
+}
+
+export interface PublicTripStop {
+  id: number;
+  city: PublicCityDetail;
+  start_date: string;
+  end_date: string;
+  stop_order: number;
+  transport_cost: string;
+  accommodation_cost: string;
+  activities: PublicTripActivity[];
+}
+
+export interface PublicBudgetSummary {
+  currency: string;
+  estimated_total: string;
+  average_daily_cost: string;
+  categories: Record<string, string>;
+}
+
+export interface PublicTripMeta {
+  id: number;
+  name: string;
+  description?: string;
+  cover_image?: string;
+  start_date: string;
+  end_date: string;
+  duration_days: number;
+  share_slug: string;
+  created_at: string;
+}
+
+export interface PublicTripDetail {
+  trip: PublicTripMeta;
+  creator: PublicCreator;
+  stops: PublicTripStop[];
+  budget_summary: PublicBudgetSummary;
+}
+
+export interface CommunityTripCard {
+  id: number;
+  name: string;
+  description?: string;
+  cover_image?: string;
+  start_date: string;
+  end_date: string;
+  duration_days: number;
+  share_slug: string;
+  creator: string;
+  cities: { id: number; name: string; country: string }[];
+  estimated_cost: string;
+  created_at: string;
+}
+
+export interface CommunityFeedResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: CommunityTripCard[];
+}
+
 // ── Shared Trip ─────────────────────────────────────────────
 
 export interface SharedTrip {

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { User, AuthTokens } from '@/types';
+import { authService } from '@/services/authService';
 
 interface AuthState {
   user: User | null;
@@ -9,8 +10,8 @@ interface AuthState {
 
   setAuth: (user: User, tokens: AuthTokens) => void;
   updateUser: (user: User) => void;
-  logout: () => void;
-  setLoading: (loading: boolean) => void;
+  logout: () => Promise<void>;
+  initialize: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -29,13 +30,41 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ user });
   },
 
-  logout: () => {
+  logout: async () => {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (refreshToken) {
+      try {
+        await authService.logout(refreshToken);
+      } catch {
+        // Silently handle backend logout failure (e.g., token already invalid)
+      }
+    }
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     set({ user: null, tokens: null, isAuthenticated: false, isLoading: false });
   },
 
-  setLoading: (isLoading) => {
-    set({ isLoading });
+  initialize: async () => {
+    const accessToken = localStorage.getItem('access_token');
+    const refreshToken = localStorage.getItem('refresh_token');
+
+    if (!accessToken || !refreshToken) {
+      set({ user: null, tokens: null, isAuthenticated: false, isLoading: false });
+      return;
+    }
+
+    try {
+      const user = await authService.getMe();
+      set({
+        user,
+        tokens: { access: accessToken, refresh: refreshToken },
+        isAuthenticated: true,
+        isLoading: false,
+      });
+    } catch {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      set({ user: null, tokens: null, isAuthenticated: false, isLoading: false });
+    }
   },
 }));

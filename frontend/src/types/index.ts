@@ -6,12 +6,14 @@
 export interface User {
   id: number;
   email: string;
-  username: string;
   first_name: string;
   last_name: string;
-  avatar_url?: string;
-  bio?: string;
+  phone?: string;
+  city?: string;
+  country?: string;
+  profile_image?: string;
   created_at: string;
+  updated_at?: string;
 }
 
 export interface AuthTokens {
@@ -33,7 +35,7 @@ export interface Trip {
   status: TripStatus;
   created_at: string;
   updated_at: string;
-  owner: Pick<User, 'id' | 'username' | 'avatar_url'>;
+  owner: Pick<User, 'id' | 'email' | 'first_name' | 'last_name' | 'profile_image'>;
   stops: TripStop[];
 }
 
@@ -132,7 +134,7 @@ export type ExpenseCategory =
 export interface SharedTrip {
   id: number;
   trip: number;
-  shared_by: Pick<User, 'id' | 'username'>;
+  shared_by: Pick<User, 'id' | 'email' | 'first_name' | 'last_name'>;
   slug: string;
   is_public: boolean;
   created_at: string;
@@ -142,7 +144,7 @@ export interface SharedTrip {
 
 export interface CommunityPost {
   id: number;
-  author: Pick<User, 'id' | 'username' | 'avatar_url'>;
+  author: Pick<User, 'id' | 'email' | 'first_name' | 'last_name' | 'profile_image'>;
   trip: Pick<Trip, 'id' | 'title' | 'cover_image_url'>;
   caption?: string;
   likes_count: number;

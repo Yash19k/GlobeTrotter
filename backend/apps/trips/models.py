@@ -63,6 +63,23 @@ class Trip(models.Model):
     def __str__(self):
         return f"{self.name} ({self.start_date} → {self.end_date})"
 
+    @property
+    def status(self) -> str:
+        """Dynamically calculates status based on current date and trip dates."""
+        from datetime import date
+        today = date.today()
+        if self.end_date < today:
+            return "COMPLETED"
+        elif self.start_date <= today <= self.end_date:
+            return "ONGOING"
+        else:
+            return "UPCOMING"
+
+    @property
+    def destination_count(self) -> int:
+        """Returns the number of stops/destinations in this trip."""
+        return self.stops.count()
+
     def save(self, *args, **kwargs):
         if not self.share_slug:
             self.share_slug = uuid.uuid4().hex[:12]

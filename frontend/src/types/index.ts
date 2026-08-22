@@ -48,11 +48,14 @@ export interface City {
   id: number;
   name: string;
   country: string;
-  country_code: string;
+  region?: string;
   description?: string;
-  image_url?: string;
-  latitude?: number;
-  longitude?: number;
+  image?: string;
+  cost_index: number;
+  popularity_score: number | string;
+  activity_count?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 // ── Trip Stop ───────────────────────────────────────────────
@@ -71,28 +74,28 @@ export interface TripStop {
 
 export interface Activity {
   id: number;
+  city: number;
+  city_name?: string;
+  city_country?: string;
   name: string;
   description?: string;
-  city: number;
-  category: ActivityCategory;
-  estimated_cost?: number;
-  currency: string;
-  duration_minutes?: number;
-  image_url?: string;
-  rating?: number;
+  category: ActivityCategory | string;
+  duration_minutes: number;
+  estimated_cost: number | string;
+  image?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export type ActivityCategory =
-  | 'sightseeing'
-  | 'food'
-  | 'adventure'
-  | 'culture'
-  | 'shopping'
-  | 'nightlife'
-  | 'nature'
-  | 'relaxation'
-  | 'transportation'
-  | 'other';
+  | 'SIGHTSEEING'
+  | 'FOOD'
+  | 'ADVENTURE'
+  | 'CULTURE'
+  | 'SHOPPING'
+  | 'NIGHTLIFE'
+  | 'NATURE'
+  | 'OTHER';
 
 // ── Trip Activity (itinerary item) ──────────────────────────
 

@@ -12,6 +12,7 @@ import { MyTripsPage } from '@/pages/trips/MyTripsPage';
 import { CreateTripPage } from '@/pages/trips/CreateTripPage';
 import { TripDetailPage } from '@/pages/trips/TripDetailPage';
 import { EditTripPage } from '@/pages/trips/EditTripPage';
+import { DiscoverPage } from '@/pages/discovery/DiscoverPage';
 
 export function App() {
   const initialize = useAuthStore((state) => state.initialize);
@@ -79,6 +80,14 @@ export function App() {
           element={
             <ProtectedRoute>
               <EditTripPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/discover"
+          element={
+            <ProtectedRoute>
+              <DiscoverPage />
             </ProtectedRoute>
           }
         />

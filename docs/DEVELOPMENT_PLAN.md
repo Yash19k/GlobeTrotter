@@ -235,17 +235,17 @@ Base: `/api/v1/`
 
 ### Cities (`/api/v1/cities/`)
 
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/` | List / search cities |
-| GET | `/:id/` | City detail |
+| Method | Endpoint | Description | Query Parameters |
+|---|---|---|---|
+| GET | `/` | List / search destination cities | `search`, `country`, `region`, `cost_index`, `ordering` (`-popularity_score`, `name`, `cost_index`), `page` |
+| GET | `/:id/` | City detail | — |
 
 ### Activities (`/api/v1/activities/`)
 
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/` | List / search / filter activities |
-| GET | `/:id/` | Activity detail |
+| Method | Endpoint | Description | Query Parameters |
+|---|---|---|---|
+| GET | `/` | List / search city activities | `search`, `city`, `category`, `min_cost`, `max_cost`, `min_duration`, `max_duration`, `ordering` (`name`, `estimated_cost`, `duration_minutes`), `page` |
+| GET | `/:id/` | Activity detail | — |
 
 ### Itinerary — Stops (`/api/v1/itinerary/`)
 

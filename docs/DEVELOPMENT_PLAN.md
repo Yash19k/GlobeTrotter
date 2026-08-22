@@ -99,13 +99,27 @@ The product should feel like a polished, real travel planning tool — not a gen
 - **Forms**: React Hook Form + Zod schemas for validation
 - **Components**: Layered — `ui/` primitives → domain components → pages
 
-### Backend Architecture
-
-- **Views**: Thin — delegates to service layer
-- **Service layer**: `backend/services/` — all business logic
-- **Serializers**: Input validation and output shaping
+- **Views**: Thin — delegates to service layer (`backend/services/trip_service.py`)
+- **Service layer**: `backend/services/` — encapsulates business logic, ownership checks, and querysets
+- **Serializers**: Input validation, date range validation, and calculated properties (`status`, `destination_count`)
 - **URLs**: Versioned under `/api/v1/`
 - **Auth**: SimpleJWT (access + refresh tokens)
+
+### Trip Status & Ownership Logic
+
+- **Status Calculation (Source of Truth)**:
+  - `end_date < today` → `COMPLETED`
+  - `start_date <= today <= end_date` → `ONGOING`
+  - `start_date > today` → `UPCOMING`
+- **Ownership Isolation**:
+  - `create_user_trip(user, data)` explicitly binds `user = request.user`.
+  - All read/update/delete operations filter by `user = request.user` (returning `404 Not Found` for unauthorized attempts).
+
+### TanStack Query Caching Strategy
+
+- `queryKey: ['trips']` — User's trip list
+- `queryKey: ['trip', id]` — Single trip detail
+- Mutations automatically invalidate `['trips']` and `['trip', id]` on create, edit, or delete.
 
 ---
 

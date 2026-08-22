@@ -25,21 +25,22 @@ export interface AuthTokens {
 
 export interface Trip {
   id: number;
-  title: string;
+  name: string;
   description?: string;
+  cover_image?: string;
   start_date: string;
   end_date: string;
-  cover_image_url?: string;
+  total_budget: number | string;
   is_public: boolean;
-  slug?: string;
+  share_slug?: string;
   status: TripStatus;
+  destination_count: number;
+  user_email?: string;
   created_at: string;
   updated_at: string;
-  owner: Pick<User, 'id' | 'email' | 'first_name' | 'last_name' | 'profile_image'>;
-  stops: TripStop[];
 }
 
-export type TripStatus = 'planning' | 'ongoing' | 'completed' | 'cancelled';
+export type TripStatus = 'UPCOMING' | 'ONGOING' | 'COMPLETED' | 'CANCELLED';
 
 // ── City / Destination ──────────────────────────────────────
 
@@ -145,7 +146,7 @@ export interface SharedTrip {
 export interface CommunityPost {
   id: number;
   author: Pick<User, 'id' | 'email' | 'first_name' | 'last_name' | 'profile_image'>;
-  trip: Pick<Trip, 'id' | 'title' | 'cover_image_url'>;
+  trip: Pick<Trip, 'id' | 'name' | 'cover_image'>;
   caption?: string;
   likes_count: number;
   created_at: string;

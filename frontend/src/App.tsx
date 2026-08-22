@@ -4,9 +4,14 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { ProtectedRoute } from '@/routes/ProtectedRoute';
 import { PublicOnlyRoute } from '@/routes/PublicOnlyRoute';
+
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
-import { DashboardPlaceholder } from '@/pages/DashboardPlaceholder';
+import { DashboardPage } from '@/pages/DashboardPage';
+import { MyTripsPage } from '@/pages/trips/MyTripsPage';
+import { CreateTripPage } from '@/pages/trips/CreateTripPage';
+import { TripDetailPage } from '@/pages/trips/TripDetailPage';
+import { EditTripPage } from '@/pages/trips/EditTripPage';
 
 export function App() {
   const initialize = useAuthStore((state) => state.initialize);
@@ -18,7 +23,7 @@ export function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public auth routes */}
+        {/* Guest Auth Routes */}
         <Route
           path="/login"
           element={
@@ -36,17 +41,49 @@ export function App() {
           }
         />
 
-        {/* Protected application routes */}
+        {/* Protected Application Routes */}
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <DashboardPlaceholder />
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/trips"
+          element={
+            <ProtectedRoute>
+              <MyTripsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/trips/new"
+          element={
+            <ProtectedRoute>
+              <CreateTripPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/trips/:id"
+          element={
+            <ProtectedRoute>
+              <TripDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/trips/:id/edit"
+          element={
+            <ProtectedRoute>
+              <EditTripPage />
             </ProtectedRoute>
           }
         />
 
-        {/* Default fallback redirects */}
+        {/* Fallback Redirects */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>

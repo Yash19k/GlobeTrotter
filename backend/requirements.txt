@@ -17,3 +17,4 @@ python-decouple==3.8
 # Production server
 gunicorn==26.1.0
 whitenoise==6.12.0
+dj-database-url==3.0.0

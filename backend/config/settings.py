@@ -86,17 +86,29 @@ TEMPLATES = [
     },
 ]
 
+import dj_database_url
+
 # ── Database (PostgreSQL — REQUIRED for both dev and production) ──
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DATABASE_NAME", default="globetrotter"),
-        "USER": config("DATABASE_USER", default="postgres"),
-        "PASSWORD": config("DATABASE_PASSWORD", default=""),
-        "HOST": config("DATABASE_HOST", default="localhost"),
-        "PORT": config("DATABASE_PORT", default="5432"),
+database_url = config("DATABASE_URL", default=None)
+if database_url:
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=database_url,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": config("DATABASE_NAME", default="globetrotter"),
+            "USER": config("DATABASE_USER", default="postgres"),
+            "PASSWORD": config("DATABASE_PASSWORD", default=""),
+            "HOST": config("DATABASE_HOST", default="localhost"),
+            "PORT": config("DATABASE_PORT", default="5432"),
+        }
+    }
 
 # ── Custom User Model ────────────────────────────────────────
 AUTH_USER_MODEL = "users.User"

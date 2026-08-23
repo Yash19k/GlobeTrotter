@@ -1,5 +1,7 @@
 # 🌍 GlobeTrotter — Personalized Travel Planning Platform
 
+🌐 **Live Demo:** https://globetrotter-rjxd.onrender.com/
+
 A personalized multi-city travel planning platform for discovering destinations, building day-wise itineraries, calculating dynamic financial budgets, visualizing interactive timelines, and sharing public travel plans.
 
 ---

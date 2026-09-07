@@ -4,6 +4,8 @@
 
 A personalized multi-city travel planning platform for discovering destinations, building day-wise itineraries, calculating dynamic financial budgets, visualizing interactive timelines, and sharing public travel plans.
 
+---
+
 ## 🛠 Tech Stack
 
 | Layer | Technology |
@@ -12,6 +14,8 @@ A personalized multi-city travel planning platform for discovering destinations,
 | **Backend** | Python 3.12, Django 5, Django REST Framework, SimpleJWT, WhiteNoise, drf-spectacular |
 | **Database** | PostgreSQL (Development & Production) |
 | **Testing** | Django APITestCase (91 backend tests), Vitest (4 frontend tests) |
+
+---
 
 ## 📁 Repository Structure
 
